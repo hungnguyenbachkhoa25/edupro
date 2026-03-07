@@ -11,9 +11,14 @@ import { Loader2 } from "lucide-react";
 import NotFound from "@/pages/not-found";
 import Landing from "@/pages/landing";
 import Dashboard from "@/pages/dashboard";
-import Practice from "@/pages/practice";
 import TestSession from "@/pages/test-session";
 import History from "@/pages/history";
+import ExamHub from "@/pages/exams/index";
+import DgnlNav from "@/pages/exams/dgnl";
+import ThptqgNav from "@/pages/exams/thptqg";
+import IeltsNav from "@/pages/exams/ielts";
+import SatNav from "@/pages/exams/sat";
+import NotificationsPage from "@/pages/notifications";
 
 function ProtectedRoute({ component: Component, ...rest }: any) {
   const { isAuthenticated, isLoading } = useAuth();
@@ -40,14 +45,29 @@ function Router() {
       <Route path="/dashboard">
         <ProtectedRoute component={Dashboard} />
       </Route>
-      <Route path="/practice">
-        <ProtectedRoute component={Practice} />
-      </Route>
       <Route path="/practice/:id">
         {(params) => <ProtectedRoute component={TestSession} id={params.id} />}
       </Route>
       <Route path="/history">
         <ProtectedRoute component={History} />
+      </Route>
+      <Route path="/exams">
+        <ProtectedRoute component={ExamHub} />
+      </Route>
+      <Route path="/exams/dgnl/:region?/:mode?">
+        <ProtectedRoute component={DgnlNav} />
+      </Route>
+      <Route path="/exams/thptqg/:subject?">
+        <ProtectedRoute component={ThptqgNav} />
+      </Route>
+      <Route path="/exams/ielts/:skill?">
+        <ProtectedRoute component={IeltsNav} />
+      </Route>
+      <Route path="/exams/sat/:section?">
+        <ProtectedRoute component={SatNav} />
+      </Route>
+      <Route path="/notifications">
+        <ProtectedRoute component={NotificationsPage} />
       </Route>
       <Route component={NotFound} />
     </Switch>

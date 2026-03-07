@@ -54,12 +54,12 @@ const MOCK_QUESTIONS: Question[] = [
 export function useTests(category?: string) {
   return useQuery({
     queryKey: ["/api/tests", category],
-    queryFn: async () => {
+    queryFn: async (): Promise<PracticeTest[]> => {
       try {
         const url = category ? `/api/tests?category=${category}` : "/api/tests";
         const res = await fetch(url, { credentials: "include" });
         if (!res.ok) throw new Error("Failed to fetch tests");
-        const data = await res.json();
+        const data: PracticeTest[] = await res.json();
         return data.length > 0 ? data : MOCK_TESTS;
       } catch (err) {
         console.warn("Using mock tests due to error:", err);

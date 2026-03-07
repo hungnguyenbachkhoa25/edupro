@@ -4,11 +4,60 @@ import { storage } from "./storage";
 import { registerAuthRoutes, setupAuth, isAuthenticated } from "./replit_integrations/auth";
 import { api } from "@shared/routes";
 import { z } from "zod";
+import { Server as SocketIOServer } from "socket.io";
+
+let io: SocketIOServer | undefined;
+
+export function getIO() {
+  if (!io) {
+    throw new Error("Socket.io not initialized");
+  }
+  return io;
+}
 
 export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
+  // Set up Socket.io
+  io = new SocketIOServer(httpServer, {
+    path: "/socket.io",
+    cors: {
+      origin: "*",
+      methods: ["GET", "POST"],
+    },
+  });
+
+  io.on("connection", (socket: any) => {
+    const userId = socket.handshake.query.userId as string;
+    if (userId) {
+      socket.join(`user:${userId}`);
+      console.log(`User ${userId} connected to socket ${socket.id}`);
+    }
+
+    socket.on("message:typing", ({ conversationId, userId, userName }: any) => {
+      if (conversationId) {
+        socket.to(`conversation:${conversationId}`).emit("message:typing", {
+          conversationId,
+          userId,
+          userName,
+        });
+      }
+    });
+
+    socket.on("join:conversation", (conversationId: string) => {
+      socket.join(`conversation:${conversationId}`);
+    });
+
+    socket.on("leave:conversation", (conversationId: string) => {
+      socket.leave(`conversation:${conversationId}`);
+    });
+
+    socket.on("disconnect", () => {
+      console.log(`Socket ${socket.id} disconnected`);
+    });
+  });
+
   // Set up Replit Auth
   await setupAuth(app);
   registerAuthRoutes(app);
@@ -74,6 +123,151 @@ export async function registerRoutes(
     }
   });
 
+  // Notifications Routes
+  app.get(api.notifications.list.path, isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const notifications = await storage.getNotifications(userId);
+      res.json(notifications);
+    } catch (error) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.get(api.notifications.unreadCount.path, isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const count = await storage.getUnreadNotificationCount(userId);
+      res.json({ count });
+    } catch (error) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.patch(api.notifications.read.path, isAuthenticated, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      await storage.markNotificationRead(id);
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.patch(api.notifications.readAll.path, isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      await storage.markAllNotificationsRead(userId);
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.delete(api.notifications.delete.path, isAuthenticated, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      await storage.deleteNotification(id);
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.post(api.notifications.create.path, isAuthenticated, async (req: any, res) => {
+    try {
+      // For demo, allow any authenticated user to create a notification
+      const notification = await storage.createNotification(req.body);
+      res.status(201).json(notification);
+    } catch (error) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Messaging Routes
+  app.get(api.conversations.list.path, isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const conversations = await storage.getConversations(userId);
+      res.json(conversations);
+    } catch (error) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.get(api.conversations.messages.path, isAuthenticated, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      const messages = await storage.getMessages(id);
+      res.json(messages);
+    } catch (error) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.post(api.conversations.create.path, isAuthenticated, async (req: any, res) => {
+    try {
+      const { participantIds } = req.body;
+      const conversation = await storage.createConversation(participantIds);
+      res.status(201).json(conversation);
+    } catch (error) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.post(api.conversations.sendMessage.path, isAuthenticated, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      const userId = req.user.claims.sub;
+      const { content, messageType } = req.body;
+      
+      const message = await storage.createMessage({
+        conversationId: id,
+        senderId: userId,
+        content,
+        messageType: messageType || "text",
+        isRead: false,
+      });
+
+      // Emit socket event
+      if (io) {
+        io.to(`conversation:${id}`).emit("message:new", message);
+        // Also notify users in their rooms for unread counts etc
+        const participants = await storage.getConversationParticipants(id);
+        participants.forEach(p => {
+          if (p.userId !== userId) {
+            io?.to(`user:${p.userId}`).emit("message:received", message);
+          }
+        });
+      }
+
+      res.status(201).json(message);
+    } catch (error) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.patch(api.conversations.read.path, isAuthenticated, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      const userId = req.user.claims.sub;
+      await storage.markMessagesRead(id, userId);
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.get(api.messages.unreadCount.path, isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const count = await storage.getUnreadMessageCount(userId);
+      res.json({ count });
+    } catch (error) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   // Seed Data function
   await seedDatabase();
 
@@ -134,6 +328,95 @@ async function seedDatabase() {
       });
 
       console.log("Database seeding completed.");
+    }
+
+    // Seed sample notifications for demo users
+    const demoUserIds = ["user123", "demo-user"]; // Example IDs, in a real app we'd get actual users
+    for (const userId of demoUserIds) {
+      const existingNotifications = await storage.getNotifications(userId);
+      if (existingNotifications.length === 0) {
+        console.log(`Seeding notifications for user ${userId}...`);
+        await storage.createNotification({
+          userId,
+          type: "study",
+          title: "Sẵn sàng cho bài học mới?",
+          body: "Bạn đã không học trong 2 ngày rồi. Hãy quay lại ôn tập nhé!",
+          actionLink: "/practice",
+          isRead: false,
+        });
+        await storage.createNotification({
+          userId,
+          type: "achievement",
+          title: "Thành tích mới!",
+          body: "Chúc mừng! Bạn đã hoàn thành 5 bài thi thử IELTS.",
+          actionLink: "/history",
+          isRead: false,
+        });
+        await storage.createNotification({
+          userId,
+          type: "system",
+          title: "Cập nhật hệ thống",
+          body: "EduPro vừa cập nhật thêm 10 đề thi THPTQG mới nhất.",
+          actionLink: "/exams/thptqg",
+          isRead: false,
+        });
+        await storage.createNotification({
+          userId,
+          type: "account",
+          title: "Nâng cấp Premium",
+          body: "Gói Premium của bạn sắp hết hạn. Gia hạn ngay để nhận ưu đãi.",
+          actionLink: "/profile",
+          isRead: true,
+        });
+        await storage.createNotification({
+          userId,
+          type: "study",
+          title: "Lịch học hôm nay",
+          body: "Hôm nay bạn có lịch ôn tập Reading 1 lúc 14:00.",
+          isRead: false,
+        });
+        await storage.createNotification({
+          userId,
+          type: "achievement",
+          title: "Cố gắng lên!",
+          body: "Bạn chỉ còn 1 bài học nữa là đạt streak 7 ngày.",
+          isRead: false,
+        });
+      }
+    }
+
+    // Seed sample conversation
+    const supportUserId = "support-bot";
+    for (const userId of demoUserIds) {
+      const userConversations = await storage.getConversations(userId);
+      if (userConversations.length === 0) {
+        console.log(`Seeding conversation for user ${userId}...`);
+        const conversation = await storage.createConversation([userId, supportUserId]);
+        
+        await storage.createMessage({
+          conversationId: conversation.id,
+          senderId: supportUserId,
+          content: "Chào mừng bạn đến với EduPro! Tôi có thể giúp gì cho bạn hôm nay?",
+          messageType: "text",
+          isRead: false,
+        });
+
+        await storage.createMessage({
+          conversationId: conversation.id,
+          senderId: userId,
+          content: "Tôi muốn hỏi về lộ trình học IELTS.",
+          messageType: "text",
+          isRead: true,
+        });
+
+        await storage.createMessage({
+          conversationId: conversation.id,
+          senderId: supportUserId,
+          content: "Tất nhiên rồi! Bạn đã thi thử để đánh giá trình độ hiện tại chưa?",
+          messageType: "text",
+          isRead: false,
+        });
+      }
     }
   } catch (error) {
     console.error("Error seeding database:", error);

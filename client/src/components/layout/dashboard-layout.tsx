@@ -2,6 +2,8 @@ import { ReactNode } from "react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "./app-sidebar";
 import { ThemeToggle } from "../theme-toggle";
+import { NotificationBell } from "../notifications/notification-bell";
+import { MessageBadge } from "../messaging/message-badge";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -25,6 +27,8 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               </h2>
             </div>
             <div className="flex items-center gap-4">
+              <MessageBadge />
+              <NotificationBell />
               <ThemeToggle />
             </div>
           </header>

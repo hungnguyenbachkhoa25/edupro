@@ -118,10 +118,10 @@ export default function Dashboard() {
           <div className="space-y-8">
             <Card className="shadow-lg shadow-black/5 rounded-3xl border-border/50 bg-primary text-primary-foreground">
               <CardContent className="p-8">
-                <h3 className="text-xl font-display font-bold mb-2">Ready to practice?</h3>
-                <p className="text-primary-foreground/80 mb-6">Choose a test from our premium bank and improve your score.</p>
-                <Link href="/practice" className="w-full flex items-center justify-center gap-2 bg-white text-primary py-3 px-4 rounded-xl font-semibold hover:bg-gray-50 transition-colors shadow-sm">
-                  Start New Test <ArrowRight className="w-5 h-5" />
+                <h3 className="text-xl font-display font-bold mb-2">Bắt đầu luyện thi ngay!</h3>
+                <p className="text-primary-foreground/80 mb-6">Chọn kỳ thi phù hợp và bắt đầu ôn luyện với hàng trăm đề thi chất lượng cao.</p>
+                <Link href="/exams" className="w-full flex items-center justify-center gap-2 bg-white text-primary py-3 px-4 rounded-xl font-semibold hover:bg-gray-50 transition-colors shadow-sm">
+                  Chọn kỳ thi <ArrowRight className="w-5 h-5" />
                 </Link>
               </CardContent>
             </Card>

@@ -1,4 +1,4 @@
-import { BookOpen, History, LayoutDashboard, Settings, LogOut, Flame } from "lucide-react";
+import { BookOpen, History, LayoutDashboard, LogOut, Flame, GraduationCap } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import {
@@ -17,9 +17,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const navItems = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
-  { title: "Practice Tests", url: "/practice", icon: BookOpen },
-  { title: "History & Results", url: "/history", icon: History },
-  { title: "Settings", url: "/settings", icon: Settings },
+  { title: "Kỳ thi", url: "/exams", icon: GraduationCap },
+  { title: "Lịch sử luyện thi", url: "/history", icon: History },
 ];
 
 export function AppSidebar() {

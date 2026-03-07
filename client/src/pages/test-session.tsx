@@ -23,7 +23,7 @@ export default function TestSession({ id }: { id: string }) {
 
   useEffect(() => {
     if (test && timeLeft === 0 && !isSubmitted) {
-      setTimeLeft(test.durationMinutes * 60);
+      setTimeLeft((test.durationMinutes ?? 60) * 60);
     }
   }, [test]);
 
@@ -172,7 +172,7 @@ export default function TestSession({ id }: { id: string }) {
             </h2>
 
             <div className="space-y-4">
-              {currentQuestion.options.map((opt: string, i: number) => {
+              {(currentQuestion.options as string[]).map((opt: string, i: number) => {
                 const isSelected = answers[currentQuestion.id] === opt;
                 return (
                   <button
