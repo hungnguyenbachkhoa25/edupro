@@ -50,8 +50,17 @@ Key pages and their roles:
 | `/exams/ielts` | IeltsNav | IELTS sub-navigator |
 | `/exams/sat` | SatNav | SAT sub-navigator |
 | `/notifications` | Notifications | Full notifications page |
+| `/settings` | SettingsIndex | Redirects to /settings/profile |
+| `/settings/profile` | ProfileSettings | Edit personal info, avatar, bio |
+| `/settings/appearance` | AppearanceSettings | Theme, font size, accent color, language |
+| `/settings/notifications` | NotificationsSettings | In-app and email notification toggles |
+| `/settings/goals` | GoalsSettings | Exam targets, score goals, daily hours slider |
+| `/settings/billing` | BillingSettings | Plan info, tier comparison, upgrade/renew |
+| `/settings/security` | SecuritySettings | Active sessions, security logs, 2FA (coming) |
+| `/settings/account` | AccountSettings | Data export, account deletion |
+| `/profile/:username` | ProfilePage | Public profile with stats, tabs, badges |
 
-All routes under `/dashboard`, `/practice`, `/history`, `/exams`, `/notifications` are wrapped in `ProtectedRoute` — unauthenticated users are redirected to `/`.
+All routes under `/dashboard`, `/practice`, `/history`, `/exams`, `/notifications`, `/settings`, `/profile` are wrapped in `ProtectedRoute` — unauthenticated users are redirected to `/`.
 
 ### Backend
 
@@ -85,6 +94,9 @@ Core tables:
 | `messages` | Chat messages |
 | `exam_attempts` | Exam-specific attempt tracking |
 | `topic_progress` | Per-user topic progress for "study by topic" mode |
+| `user_sessions` | Active login sessions per user (device, browser, IP, last active) |
+| `security_logs` | Security events per user (logins, etc.) |
+| `learning_goals` | Per-user exam goals (exam types, target scores, dates, daily hours) |
 
 ### Auth & Authorization
 

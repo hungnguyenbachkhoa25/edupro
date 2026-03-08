@@ -19,6 +19,16 @@ import ThptqgNav from "@/pages/exams/thptqg";
 import IeltsNav from "@/pages/exams/ielts";
 import SatNav from "@/pages/exams/sat";
 import NotificationsPage from "@/pages/notifications";
+import SettingsIndex from "@/pages/settings/index";
+import ProfileSettings from "@/pages/settings/profile";
+import AppearanceSettings from "@/pages/settings/appearance";
+import BillingSettings from "@/pages/settings/billing";
+import SecuritySettings from "@/pages/settings/security";
+import AccountSettings from "@/pages/settings/account";
+import ProfilePage from "@/pages/profile/index";
+import NotificationsSettings from "@/pages/settings/notifications";
+import GoalsSettings from "@/pages/settings/goals";
+import { useUserPreferences } from "@/hooks/use-user-preferences";
 
 function ProtectedRoute({ component: Component, ...rest }: any) {
   const { isAuthenticated, isLoading } = useAuth();
@@ -39,6 +49,7 @@ function ProtectedRoute({ component: Component, ...rest }: any) {
 }
 
 function Router() {
+  useUserPreferences();
   return (
     <Switch>
       <Route path="/" component={Landing} />
@@ -68,6 +79,33 @@ function Router() {
       </Route>
       <Route path="/notifications">
         <ProtectedRoute component={NotificationsPage} />
+      </Route>
+      <Route path="/profile/:username">
+        {(params: any) => <ProtectedRoute component={ProfilePage} username={params.username} />}
+      </Route>
+      <Route path="/settings">
+        <ProtectedRoute component={SettingsIndex} />
+      </Route>
+      <Route path="/settings/profile">
+        <ProtectedRoute component={ProfileSettings} />
+      </Route>
+      <Route path="/settings/security">
+        <ProtectedRoute component={SecuritySettings} />
+      </Route>
+      <Route path="/settings/notifications">
+        <ProtectedRoute component={NotificationsSettings} />
+      </Route>
+      <Route path="/settings/appearance">
+        <ProtectedRoute component={AppearanceSettings} />
+      </Route>
+      <Route path="/settings/goals">
+        <ProtectedRoute component={GoalsSettings} />
+      </Route>
+      <Route path="/settings/billing">
+        <ProtectedRoute component={BillingSettings} />
+      </Route>
+      <Route path="/settings/account">
+        <ProtectedRoute component={AccountSettings} />
       </Route>
       <Route component={NotFound} />
     </Switch>

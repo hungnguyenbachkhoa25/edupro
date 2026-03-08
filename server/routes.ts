@@ -184,6 +184,77 @@ export async function registerRoutes(
     }
   });
 
+  // Settings & Sessions Routes
+  app.get("/api/settings/profile", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.updateUser(userId, {});
+      res.json(user);
+    } catch (error) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.patch("/api/settings/profile", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const data = req.body;
+      const updatedUser = await storage.updateUser(userId, data);
+      res.json(updatedUser);
+    } catch (error) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.get("/api/settings/sessions", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const sessions = await storage.getUserSessions(userId);
+      res.json(sessions);
+    } catch (error) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.delete("/api/settings/sessions/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      await storage.deleteUserSession(req.params.id);
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.get("/api/settings/security-logs", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const logs = await storage.getSecurityLogs(userId, 10);
+      res.json(logs);
+    } catch (error) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.get("/api/user/export", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const [results, goals, sessions] = await Promise.all([
+        storage.getTestResults(userId),
+        storage.getLearningGoals(userId),
+        storage.getUserSessions(userId)
+      ]);
+      
+      res.json({
+        user: req.user.claims,
+        testResults: results,
+        learningGoals: goals,
+        sessions: sessions
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   // Messaging Routes
   app.get(api.conversations.list.path, isAuthenticated, async (req: any, res) => {
     try {
@@ -268,6 +339,81 @@ export async function registerRoutes(
     }
   });
 
+  // Settings Routes
+  app.patch("/api/settings/appearance", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { theme, fontSize, accentColor, language } = req.body;
+      const updatedUser = await storage.updateUser(userId, {
+        theme,
+        fontSize,
+        accentColor,
+        language,
+      });
+      res.json(updatedUser);
+    } catch (error) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.patch("/api/settings/notifications", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const updatedUser = await storage.updateUser(userId, req.body);
+      res.json(updatedUser);
+    } catch (error) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.get("/api/settings/goals", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const goals = await storage.getLearningGoals(userId);
+      res.json(goals || { examTypes: [], targetScores: {}, examDates: {}, dailyHours: 1.5 });
+    } catch (error) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.post("/api/settings/goals", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const goals = await storage.upsertLearningGoals(userId, req.body);
+      res.json(goals);
+    } catch (error) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Profile Routes
+  app.get("/api/profile/me", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUserById(userId);
+      if (!user) return res.status(404).json({ message: "User not found" });
+      res.json(user);
+    } catch (error) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.get("/api/profile/:username", isAuthenticated, async (req: any, res) => {
+    try {
+      const { username } = req.params;
+      let user = await storage.getUserByUsername(username);
+      if (!user) {
+        user = await storage.getUserById(username);
+      }
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      res.json(user);
+    } catch (error) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   // Seed Data function
   await seedDatabase();
 
@@ -337,7 +483,7 @@ async function seedDatabase() {
       if (existingNotifications.length === 0) {
         console.log(`Seeding notifications for user ${userId}...`);
         await storage.createNotification({
-          userId,
+          userId: userId as string,
           type: "study",
           title: "Sẵn sàng cho bài học mới?",
           body: "Bạn đã không học trong 2 ngày rồi. Hãy quay lại ôn tập nhé!",
@@ -369,7 +515,7 @@ async function seedDatabase() {
           isRead: true,
         });
         await storage.createNotification({
-          userId,
+          userId: userId as string,
           type: "study",
           title: "Lịch học hôm nay",
           body: "Hôm nay bạn có lịch ôn tập Reading 1 lúc 14:00.",

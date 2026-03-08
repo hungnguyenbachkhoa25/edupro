@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { index, jsonb, pgTable, timestamp, varchar, integer, boolean, text } from "drizzle-orm/pg-core";
+import { index, jsonb, pgTable, timestamp, varchar, integer, boolean, text, real } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -17,12 +17,59 @@ export const sessions = pgTable(
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   email: varchar("email").unique(),
+  username: varchar("username", { length: 30 }).unique(),
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
+  bio: text("bio"),
   profileImageUrl: varchar("profile_image_url"),
+  coverPhotoUrl: varchar("cover_photo_url"),
+  school: varchar("school", { length: 100 }),
+  province: varchar("province", { length: 50 }),
+  birthDate: varchar("birth_date"), // 'YYYY-MM-DD'
+  gender: varchar("gender"), // 'male'|'female'|'other'
+  accentColor: varchar("accent_color", { length: 7 }).default("#2563EB"),
+  fontSize: varchar("font_size").default("medium"), // 'small'|'medium'|'large'
+  language: varchar("language").default("vi"), // 'vi'|'en'
+  theme: varchar("theme").default("system"), // 'light'|'dark'|'system'
+  notifyDailyReminder: boolean("notify_daily_reminder").default(true),
+  notifyStreakWarning: boolean("notify_streak_warning").default(true),
+  notifyEmailWeekly: boolean("notify_email_weekly").default(true),
+  reminderTime: varchar("reminder_time").default("20:00"),
+  twoFactorEnabled: boolean("two_factor_enabled").default(false),
   plan: varchar("plan").default("free"), // free, pro, premium
   streak: integer("streak").default(0),
   targetScore: varchar("target_score"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const userSessions = pgTable("user_sessions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").references(() => users.id).notNull(),
+  deviceName: varchar("device_name").notNull(),
+  browser: varchar("browser").notNull(),
+  ipAddress: varchar("ip_address").notNull(),
+  location: varchar("location"),
+  lastActiveAt: timestamp("last_active_at").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const securityLogs = pgTable("security_logs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").references(() => users.id).notNull(),
+  eventType: varchar("event_type").notNull(),
+  ipAddress: varchar("ip_address"),
+  userAgent: varchar("user_agent"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const learningGoals = pgTable("learning_goals", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").references(() => users.id).notNull().unique(),
+  examTypes: jsonb("exam_types").$type<string[]>().notNull().default([]),
+  targetScores: jsonb("target_scores").$type<Record<string, string>>().notNull().default({}),
+  examDates: jsonb("exam_dates").$type<Record<string, string>>().notNull().default({}),
+  dailyHours: real("daily_hours").default(1.5),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -128,6 +175,9 @@ export const insertConversationParticipantSchema = createInsertSchema(conversati
 export const insertMessageSchema = createInsertSchema(messages).omit({ id: true, createdAt: true, readAt: true });
 export const insertExamAttemptSchema = createInsertSchema(examAttempts).omit({ id: true, startedAt: true });
 export const insertTopicProgressSchema = createInsertSchema(topicProgress).omit({ id: true, lastPracticedAt: true });
+export const insertUserSessionSchema = createInsertSchema(userSessions).omit({ id: true, createdAt: true });
+export const insertSecurityLogSchema = createInsertSchema(securityLogs).omit({ id: true, createdAt: true });
+export const insertLearningGoalSchema = createInsertSchema(learningGoals).omit({ id: true, createdAt: true, updatedAt: true, userId: true });
 
 export type PracticeTest = typeof practiceTests.$inferSelect;
 export type Question = typeof questions.$inferSelect;
@@ -139,6 +189,9 @@ export type ConversationParticipant = typeof conversationParticipants.$inferSele
 export type Message = typeof messages.$inferSelect;
 export type ExamAttempt = typeof examAttempts.$inferSelect;
 export type TopicProgress = typeof topicProgress.$inferSelect;
+export type UserSession = typeof userSessions.$inferSelect;
+export type SecurityLog = typeof securityLogs.$inferSelect;
+export type LearningGoal = typeof learningGoals.$inferSelect;
 
 export type InsertPracticeTest = z.infer<typeof insertPracticeTestSchema>;
 export type InsertQuestion = z.infer<typeof insertQuestionSchema>;
@@ -150,3 +203,6 @@ export type InsertConversationParticipant = z.infer<typeof insertConversationPar
 export type InsertMessage = z.infer<typeof insertMessageSchema>;
 export type InsertExamAttempt = z.infer<typeof insertExamAttemptSchema>;
 export type InsertTopicProgress = z.infer<typeof insertTopicProgressSchema>;
+export type InsertUserSession = z.infer<typeof insertUserSessionSchema>;
+export type InsertSecurityLog = z.infer<typeof insertSecurityLogSchema>;
+export type InsertLearningGoal = z.infer<typeof insertLearningGoalSchema>;

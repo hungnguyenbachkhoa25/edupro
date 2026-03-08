@@ -10,6 +10,10 @@ import {
   messages,
   examAttempts,
   topicProgress,
+  userSessions,
+  securityLogs,
+  learningGoals,
+  type User,
   type PracticeTest,
   type Question,
   type TestResult,
@@ -19,6 +23,9 @@ import {
   type Message,
   type ExamAttempt,
   type TopicProgress,
+  type UserSession,
+  type SecurityLog,
+  type LearningGoal,
   type InsertPracticeTest,
   type InsertQuestion,
   type InsertTestResult,
@@ -26,6 +33,9 @@ import {
   type InsertMessage,
   type InsertExamAttempt,
   type InsertTopicProgress,
+  type InsertUserSession,
+  type InsertSecurityLog,
+  type InsertLearningGoal,
 } from "@shared/schema";
 import { eq, desc, and, count } from "drizzle-orm";
 
@@ -68,6 +78,24 @@ export interface IStorage {
   // Topic Progress
   getTopicProgress(userId: string, examType: string): Promise<TopicProgress[]>;
   upsertTopicProgress(data: InsertTopicProgress): Promise<TopicProgress>;
+
+  // Users
+  getUserById(id: string): Promise<User | undefined>;
+  updateUser(id: string, data: Partial<User>): Promise<User>;
+  getUserByUsername(username: string): Promise<User | undefined>;
+
+  // Sessions
+  getOrCreateUserSession(userId: string, data: InsertUserSession): Promise<UserSession>;
+  getUserSessions(userId: string): Promise<UserSession[]>;
+  deleteUserSession(id: string): Promise<void>;
+
+  // Security Logs
+  createSecurityLog(data: InsertSecurityLog): Promise<SecurityLog>;
+  getSecurityLogs(userId: string, limit: number): Promise<SecurityLog[]>;
+
+  // Learning Goals
+  getLearningGoals(userId: string): Promise<LearningGoal | undefined>;
+  upsertLearningGoals(userId: string, data: Partial<InsertLearningGoal>): Promise<LearningGoal>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -233,6 +261,93 @@ export class DatabaseStorage implements IStorage {
       const [newProgress] = await db.insert(topicProgress).values(data).returning();
       return newProgress;
     }
+  }
+
+  // Users
+  async getUserById(id: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user;
+  }
+
+  async updateUser(id: string, data: Partial<User>): Promise<User> {
+    const [updated] = await db.update(users).set(data).where(eq(users.id, id)).returning();
+    return updated;
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user;
+  }
+
+  // Sessions
+  async getOrCreateUserSession(userId: string, data: InsertUserSession): Promise<UserSession> {
+    const [existing] = await db.select().from(userSessions).where(and(
+      eq(userSessions.userId, userId),
+      eq(userSessions.deviceName, data.deviceName),
+      eq(userSessions.browser, data.browser)
+    ));
+
+    if (existing) {
+      const [updated] = await db.update(userSessions)
+        .set({ lastActiveAt: new Date(), ipAddress: data.ipAddress, location: data.location })
+        .where(eq(userSessions.id, existing.id))
+        .returning();
+      return updated;
+    }
+
+    const [session] = await db.insert(userSessions).values({ ...data, userId }).returning();
+    return session;
+  }
+
+  async getUserSessions(userId: string): Promise<UserSession[]> {
+    return await db.select().from(userSessions).where(eq(userSessions.userId, userId)).orderBy(desc(userSessions.lastActiveAt));
+  }
+
+  async deleteUserSession(id: string): Promise<void> {
+    await db.delete(userSessions).where(eq(userSessions.id, id));
+  }
+
+  // Security Logs
+  async createSecurityLog(data: InsertSecurityLog): Promise<SecurityLog> {
+    const [log] = await db.insert(securityLogs).values(data).returning();
+    return log;
+  }
+
+  async getSecurityLogs(userId: string, limit: number): Promise<SecurityLog[]> {
+    return await db.select().from(securityLogs).where(eq(securityLogs.userId, userId)).orderBy(desc(securityLogs.createdAt)).limit(limit);
+  }
+
+  // Learning Goals
+  async getLearningGoals(userId: string): Promise<LearningGoal | undefined> {
+    const [goals] = await db.select().from(learningGoals).where(eq(learningGoals.userId, userId));
+    return goals;
+  }
+
+  async upsertLearningGoals(userId: string, data: Partial<InsertLearningGoal>): Promise<LearningGoal> {
+    const [existing] = await db.select().from(learningGoals).where(eq(learningGoals.userId, userId));
+
+    if (existing) {
+      const [updated] = await db.update(learningGoals)
+        .set({
+          ...data,
+          updatedAt: new Date(),
+          examTypes: data.examTypes as string[] | undefined,
+          targetScores: data.targetScores as Record<string, string> | undefined,
+          examDates: data.examDates as Record<string, string> | undefined,
+        })
+        .where(eq(learningGoals.userId, userId))
+        .returning();
+      return updated;
+    }
+
+    const [newGoals] = await db.insert(learningGoals).values({
+      userId,
+      examTypes: (data.examTypes || []) as string[],
+      targetScores: (data.targetScores || {}) as Record<string, string>,
+      examDates: (data.examDates || {}) as Record<string, string>,
+      dailyHours: data.dailyHours ?? 1.5,
+    }).returning();
+    return newGoals;
   }
 }
 
