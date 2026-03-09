@@ -25,6 +25,9 @@ import BadgesPage from "@/pages/badges";
 import CommunityPage from "@/pages/community";
 import LearningCenterPage from "@/pages/learning-center";
 import AnalyticsPage from "@/pages/analytics";
+import MonetizationPage from "@/pages/monetization";
+import PerformancePage from "@/pages/performance";
+import AdminPortalPage from "@/pages/admin-portal";
 import SettingsIndex from "@/pages/settings/index";
 import ProfileSettings from "@/pages/settings/profile";
 import AppearanceSettings from "@/pages/settings/appearance";
@@ -108,6 +111,15 @@ function Router() {
       </Route>
       <Route path="/analytics">
         <ProtectedRoute component={AnalyticsPage} />
+      </Route>
+      <Route path="/monetization">
+        <ProtectedRoute component={MonetizationPage} />
+      </Route>
+      <Route path="/performance">
+        <ProtectedRoute component={PerformancePage} />
+      </Route>
+      <Route path="/admin-portal">
+        <ProtectedRoute component={AdminPortalPage} />
       </Route>
       <Route path="/profile/:username">
         {(params: any) => <ProtectedRoute component={ProfilePage} username={params.username} />}

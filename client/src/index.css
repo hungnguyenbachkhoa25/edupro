@@ -108,6 +108,24 @@
   }
 }
 
+:root.dyslexia-font body,
+.dyslexia-font body {
+  font-family: "OpenDyslexic", "Comic Sans MS", "Arial", sans-serif !important;
+  letter-spacing: 0.02em;
+  word-spacing: 0.06em;
+}
+
+:root.high-contrast,
+.high-contrast {
+  filter: contrast(1.2) saturate(1.15);
+}
+
+:root.high-contrast *:focus,
+.high-contrast *:focus {
+  outline: 2px solid hsl(var(--primary)) !important;
+  outline-offset: 2px;
+}
+
 @layer base {
   * {
     @apply border-border;

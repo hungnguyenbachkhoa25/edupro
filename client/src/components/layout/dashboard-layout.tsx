@@ -5,6 +5,7 @@ import { ThemeToggle } from "../theme-toggle";
 import { NotificationBell } from "../notifications/notification-bell";
 import { MessageBadge } from "../messaging/message-badge";
 import { XPBar } from "../gamification/xp-bar";
+import { NetworkIndicator } from "../system/network-indicator";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -29,6 +30,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             </div>
             <div className="flex items-center gap-4">
               <XPBar />
+              <NetworkIndicator />
               <MessageBadge />
               <NotificationBell />
               <ThemeToggle />

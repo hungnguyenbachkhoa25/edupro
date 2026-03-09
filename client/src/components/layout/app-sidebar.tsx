@@ -18,6 +18,9 @@ import {
   Users,
   LibraryBig,
   ChartNoAxesCombined,
+  Wallet,
+  Gauge,
+  ShieldCheck,
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
@@ -67,6 +70,12 @@ const socialContentAnalyticsItems = [
   { title: "Cộng đồng", url: "/community", icon: Users },
   { title: "Nội dung học", url: "/learning-center", icon: LibraryBig },
   { title: "Analytics", url: "/analytics", icon: ChartNoAxesCombined },
+];
+
+const businessAndAdminItems = [
+  { title: "Monetization", url: "/monetization", icon: Wallet },
+  { title: "Performance", url: "/performance", icon: Gauge },
+  { title: "Admin Portal", url: "/admin-portal", icon: ShieldCheck },
 ];
 
 export function AppSidebar() {
@@ -143,6 +152,15 @@ export function AppSidebar() {
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>{renderItems(socialContentAnalyticsItems)}</SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+            Monetization & Admin
+          </SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>{renderItems(businessAndAdminItems)}</SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>

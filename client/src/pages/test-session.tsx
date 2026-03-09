@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { useTest } from "@/hooks/use-tests";
 import { useSubmitResult, useResults } from "@/hooks/use-results";
+import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -72,6 +73,7 @@ function getOptionDistribution(options: string[], correctAnswer: string) {
 
 export default function TestSession({ id }: { id: string }) {
   const [, setLocation] = useLocation();
+  const { user } = useAuth();
   const { data: test, isLoading } = useTest(id);
   const { data: results = [] } = useResults();
   const submitResult = useSubmitResult();
@@ -331,11 +333,40 @@ export default function TestSession({ id }: { id: string }) {
     return Math.round((prev.score / Math.max(1, prev.totalQuestions)) * 100);
   }, [results, test]);
 
+  const freeLimitReached = (user?.plan === "free" || !user?.plan) && results.length >= 3;
+
   if (isLoading || !test) {
     return (
       <div className="h-screen w-screen flex flex-col items-center justify-center bg-background">
         <Loader2 className="w-10 h-10 text-primary animate-spin mb-4" />
         <p className="text-muted-foreground font-medium">Preparing your test environment...</p>
+      </div>
+    );
+  }
+
+  if (freeLimitReached && !isSubmitted) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <Card className="max-w-xl w-full p-8 space-y-4 border-primary/30 bg-primary/5">
+          <h2 className="text-2xl font-bold">Mở khóa không giới hạn đề thi</h2>
+          <p className="text-muted-foreground">
+            Bạn đã dùng 3 đề miễn phí. Nâng cấp Pro để tiếp tục luyện đề không giới hạn, mở hint AI và báo cáo chi tiết.
+          </p>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="rounded-lg border p-3">
+              <p className="text-sm text-muted-foreground">Pro Monthly</p>
+              <p className="text-xl font-bold">199.000đ</p>
+            </div>
+            <div className="rounded-lg border p-3">
+              <p className="text-sm text-muted-foreground">Pro Annual</p>
+              <p className="text-xl font-bold">-40%</p>
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Button onClick={() => setLocation("/monetization")}>Bắt đầu trial 7 ngày</Button>
+            <Button variant="outline" onClick={() => setLocation("/exams")}>Quay lại kho đề</Button>
+          </div>
+        </Card>
       </div>
     );
   }

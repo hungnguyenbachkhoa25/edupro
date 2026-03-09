@@ -172,6 +172,15 @@ export default function Dashboard() {
                 <Link href="/analytics" className="block rounded-xl border border-border/60 p-3 text-sm hover:border-primary/40 hover:bg-primary/5">
                   Analytics Dashboard
                 </Link>
+                <Link href="/monetization" className="block rounded-xl border border-border/60 p-3 text-sm hover:border-primary/40 hover:bg-primary/5">
+                  Monetization
+                </Link>
+                <Link href="/performance" className="block rounded-xl border border-border/60 p-3 text-sm hover:border-primary/40 hover:bg-primary/5">
+                  Performance
+                </Link>
+                <Link href="/admin-portal" className="block rounded-xl border border-border/60 p-3 text-sm hover:border-primary/40 hover:bg-primary/5">
+                  Admin Portal
+                </Link>
               </CardContent>
             </Card>
           </div>
