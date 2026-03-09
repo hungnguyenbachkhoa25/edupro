@@ -1,4 +1,21 @@
-import { BookOpen, History, LayoutDashboard, LogOut, Flame, GraduationCap, Settings, User, ChevronUp } from "lucide-react";
+import {
+  BookOpen,
+  History,
+  LayoutDashboard,
+  LogOut,
+  Flame,
+  GraduationCap,
+  Settings,
+  User,
+  ChevronUp,
+  Trophy,
+  CalendarDays,
+  Medal,
+  Swords,
+  PenLine,
+  ChartColumn,
+  MessageSquareText,
+} from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import {
@@ -23,16 +40,53 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 
-const navItems = [
+const menuItems = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "Kỳ thi", url: "/exams", icon: GraduationCap },
   { title: "Lịch sử luyện thi", url: "/history", icon: History },
   { title: "Cài đặt", url: "/settings", icon: Settings },
 ];
 
+const gamificationItems = [
+  { title: "Bảng xếp hạng", url: "/leaderboard", icon: Trophy },
+  { title: "Huy hiệu", url: "/badges", icon: Medal },
+  { title: "Thử thách", url: "/challenges", icon: Swords },
+];
+
+const aiFeatureItems = [
+  { title: "Chấm Writing AI", url: "/ai/writing", icon: PenLine },
+  { title: "Kế hoạch học tập", url: "/ai/planner", icon: CalendarDays },
+  { title: "Phân tích điểm yếu", url: "/ai/weakness", icon: ChartColumn },
+  { title: "Trợ lý AI", url: "/ai/assistant", icon: MessageSquareText },
+];
+
 export function AppSidebar() {
   const [location] = useLocation();
   const { user, logout } = useAuth();
+  const isItemActive = (url: string) => location === url || location.startsWith(`${url}/`);
+
+  const renderItems = (items: Array<{ title: string; url: string; icon: any }>) =>
+    items.map((item) => {
+      const isActive = isItemActive(item.url);
+      return (
+        <SidebarMenuItem key={item.title}>
+          <SidebarMenuButton
+            asChild
+            isActive={isActive}
+            className={`rounded-xl transition-all duration-200 ${
+              isActive
+                ? "bg-primary/10 text-primary font-semibold shadow-sm"
+                : "text-muted-foreground hover:bg-muted hover:text-foreground hover-elevate"
+            }`}
+          >
+            <Link href={item.url} className="flex items-center gap-3 py-2 px-3">
+              <item.icon className={`w-5 h-5 ${isActive ? "text-primary" : ""}`} />
+              <span>{item.title}</span>
+            </Link>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+      );
+    });
 
   return (
     <Sidebar>
@@ -52,29 +106,25 @@ export function AppSidebar() {
             Menu
           </SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
-              {navItems.map((item) => {
-                const isActive = location === item.url;
-                return (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton 
-                      asChild 
-                      isActive={isActive}
-                      className={`rounded-xl transition-all duration-200 ${
-                        isActive 
-                          ? "bg-primary/10 text-primary font-semibold shadow-sm" 
-                          : "text-muted-foreground hover:bg-muted hover:text-foreground hover-elevate"
-                      }`}
-                    >
-                      <Link href={item.url} className="flex items-center gap-3 py-2 px-3">
-                        <item.icon className={`w-5 h-5 ${isActive ? "text-primary" : ""}`} />
-                        <span>{item.title}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                );
-              })}
-            </SidebarMenu>
+            <SidebarMenu>{renderItems(menuItems)}</SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+            Gamification
+          </SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>{renderItems(gamificationItems)}</SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+            Tính năng AI
+          </SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>{renderItems(aiFeatureItems)}</SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>

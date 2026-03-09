@@ -2,6 +2,21 @@
 
   A full-stack web application for IELTS, SAT, DGNL, and THPTQG test preparation.
 
+  ## Local Run (No Replit Required)
+  Create `.env` with:
+
+  ```env
+  DATABASE_URL=postgresql://postgres:<PASSWORD>@db.<PROJECT_REF>.supabase.co:5432/postgres?sslmode=require
+  SESSION_SECRET=<any-long-random-string>
+  PORT=5000
+  ```
+
+  Then run:
+  ```bash
+  npm run db:push
+  npm run dev
+  ```
+
   ## Tech Stack
   - **Frontend**: React, TypeScript, Tailwind CSS, shadcn/ui
   - **Backend**: Node.js, Express, TypeScript

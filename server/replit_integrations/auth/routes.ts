@@ -1,5 +1,4 @@
 import type { Express } from "express";
-import { authStorage } from "./storage";
 import { isAuthenticated } from "./replitAuth";
 import { storage } from "../../storage";
 
@@ -57,7 +56,10 @@ export function registerAuthRoutes(app: Express): void {
   app.get("/api/auth/user", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
-      const user = await authStorage.getUser(userId);
+      const user = await storage.getUserById(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
 
       // Seed welcome notifications for new users (async, non-blocking)
       seedWelcomeNotifications(userId);

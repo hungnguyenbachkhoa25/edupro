@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Bell, Mail, Clock } from "lucide-react";
+import SettingsLayout from "./layout";
 
 export default function NotificationsSettings() {
   const { user } = useAuth();
@@ -32,25 +33,26 @@ export default function NotificationsSettings() {
   if (!user) return null;
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h3 className="text-lg font-medium">Thông báo</h3>
-        <p className="text-sm text-muted-foreground">
-          Quản lý cách bạn nhận thông báo từ EduPro.
-        </p>
-      </div>
+    <SettingsLayout>
+      <div className="space-y-6">
+        <div>
+          <h3 className="text-lg font-medium">Thông báo</h3>
+          <p className="text-sm text-muted-foreground">
+            Quản lý cách bạn nhận thông báo từ EduPro.
+          </p>
+        </div>
 
-      <Tabs defaultValue="in-app" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="in-app" data-testid="tab-in-app">
-            <Bell className="w-4 h-4 mr-2" />
-            Trong app
-          </TabsTrigger>
-          <TabsTrigger value="email" data-testid="tab-email">
-            <Mail className="w-4 h-4 mr-2" />
-            Email
-          </TabsTrigger>
-        </TabsList>
+        <Tabs defaultValue="in-app" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="in-app" data-testid="tab-in-app">
+              <Bell className="w-4 h-4 mr-2" />
+              Trong app
+            </TabsTrigger>
+            <TabsTrigger value="email" data-testid="tab-email">
+              <Mail className="w-4 h-4 mr-2" />
+              Email
+            </TabsTrigger>
+          </TabsList>
 
         <TabsContent value="in-app" className="space-y-4 pt-4">
           <Card>
@@ -134,7 +136,8 @@ export default function NotificationsSettings() {
             </CardContent>
           </Card>
         </TabsContent>
-      </Tabs>
-    </div>
+        </Tabs>
+      </div>
+    </SettingsLayout>
   );
 }

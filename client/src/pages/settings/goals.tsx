@@ -1,17 +1,17 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Calendar as CalendarIcon, Target, Clock, AlertCircle } from "lucide-react";
+import { Calendar as CalendarIcon, Target, Clock } from "lucide-react";
 import { format, differenceInDays, parseISO } from "date-fns";
 import { vi } from "date-fns/locale";
 import type { LearningGoal } from "@shared/schema";
+import SettingsLayout from "./layout";
 
 const EXAM_TYPES = [
   { id: "DGNL_HCM", label: "ĐGNL HCM", icon: "🎓" },
@@ -114,13 +114,14 @@ export default function GoalsSettings() {
     : null;
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h3 className="text-lg font-medium">Mục tiêu học tập</h3>
-        <p className="text-sm text-muted-foreground">
-          Thiết lập lộ trình học tập để EduPro đồng hành cùng bạn.
-        </p>
-      </div>
+    <SettingsLayout>
+      <div className="space-y-6">
+        <div>
+          <h3 className="text-lg font-medium">Mục tiêu học tập</h3>
+          <p className="text-sm text-muted-foreground">
+            Thiết lập lộ trình học tập để EduPro đồng hành cùng bạn.
+          </p>
+        </div>
 
       {nearestExam && (
         <Card className="bg-primary/5 border-primary/20">
@@ -243,15 +244,16 @@ export default function GoalsSettings() {
         </Card>
       </div>
 
-      <div className="flex justify-end">
-        <Button
-          onClick={() => mutation.mutate(formData)}
-          disabled={mutation.isPending}
-          data-testid="button-save-goals"
-        >
-          {mutation.isPending ? "Đang lưu..." : "Lưu thay đổi"}
-        </Button>
+        <div className="flex justify-end">
+          <Button
+            onClick={() => mutation.mutate(formData)}
+            disabled={mutation.isPending}
+            data-testid="button-save-goals"
+          >
+            {mutation.isPending ? "Đang lưu..." : "Lưu thay đổi"}
+          </Button>
+        </div>
       </div>
-    </div>
+    </SettingsLayout>
   );
 }

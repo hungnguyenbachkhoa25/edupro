@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Bell, BookOpen, Trophy, User, Settings, Check } from "lucide-react";
+import { Bell, BookOpen, Trophy, User, Settings } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import {
   Popover,

@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Flame, GraduationCap, Trophy, MessageCircle, Edit2, Calendar } from "lucide-react";
 import { useResults } from "@/hooks/use-results";
+import { useGamification } from "@/hooks/use-gamification";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 import type { User } from "@shared/schema";
@@ -19,6 +20,7 @@ interface ProfilePageProps {
 export default function ProfilePage({ username }: ProfilePageProps) {
   const { user: currentUser } = useAuth();
   const { data: results } = useResults();
+  const { totalXp, level, levelTitle, badges } = useGamification();
 
   const isMe = username === "me" || username === currentUser?.username;
 
@@ -51,8 +53,8 @@ export default function ProfilePage({ username }: ProfilePageProps) {
   const userResults = results || [];
   const totalTests = userResults.length;
   const streak = profileUser.streak || 0;
-  const xp = streak * 100;
-  const rank = streak > 10 ? "Vàng" : streak > 5 ? "Bạc" : "Đồng";
+  const xp = totalXp;
+  const rank = `${levelTitle} • Lv.${level}`;
 
   return (
     <DashboardLayout>
@@ -216,7 +218,7 @@ export default function ProfilePage({ username }: ProfilePageProps) {
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="text-lg font-bold text-primary">{result.score}%</p>
+                      <p className="text-lg font-bold text-primary">{Math.round((result.score / Math.max(1, result.totalQuestions)) * 100)}%</p>
                       <p className="text-xs text-muted-foreground">{result.totalQuestions} câu hỏi</p>
                     </div>
                   </CardContent>
@@ -230,17 +232,10 @@ export default function ProfilePage({ username }: ProfilePageProps) {
           </TabsContent>
 
           <TabsContent value="achievements" className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-            {[
-              { id: 1, title: "Lần đầu luyện thi", icon: "⭐", unlocked: true },
-              { id: 2, title: "Streak 3 ngày", icon: "🔥", unlocked: streak >= 3 },
-              { id: 3, title: "Hoàn thành 5 đề", icon: "📚", unlocked: totalTests >= 5 },
-              { id: 4, title: "Điểm số 80%+", icon: "🎯", unlocked: userResults.some(r => r.score >= 80) },
-              { id: 5, title: "Streak 7 ngày", icon: "🔥", unlocked: streak >= 7 },
-              { id: 6, title: "Thành viên Pro", icon: "💎", unlocked: profileUser.plan === "pro" || profileUser.plan === "premium" },
-            ].map((badge) => (
-              <Card key={badge.id} className={`hover-elevate transition-opacity ${badge.unlocked ? "opacity-100" : "opacity-40"}`}>
+            {badges.map((badge) => (
+              <Card key={badge.id} className={`hover-elevate transition-opacity ${badge.unlocked ? "opacity-100" : "opacity-40"} ${badge.rare ? "ring-1 ring-amber-500/40" : ""}`}>
                 <CardContent className="p-4 flex flex-col items-center gap-2 text-center">
-                  <div className="text-3xl grayscale-[0.5]">{badge.icon}</div>
+                  <div className={`text-3xl ${badge.rare ? "animate-pulse" : ""}`}>{badge.icon}</div>
                   <p className="text-xs font-semibold leading-tight">{badge.title}</p>
                 </CardContent>
               </Card>

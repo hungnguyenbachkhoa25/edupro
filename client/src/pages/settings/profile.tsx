@@ -27,7 +27,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Camera, Loader2 } from "lucide-react";
 import { z } from "zod";
-import { useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import { cn } from "@/lib/utils";
 
 const profileSchema = z.object({
@@ -66,18 +66,46 @@ export default function ProfileSettings() {
     },
   });
 
+  useEffect(() => {
+    if (!user) return;
+    form.reset({
+      firstName: user.firstName || "",
+      lastName: user.lastName || "",
+      username: user.username || "",
+      bio: user.bio || "",
+      school: user.school || "",
+      province: user.province || "",
+      birthDate: user.birthDate || "",
+      gender: user.gender || "other",
+      profileImageUrl: user.profileImageUrl || "",
+    });
+    setPreviewImage(user.profileImageUrl || null);
+  }, [user, form]);
+
   const updateProfile = useMutation({
     mutationFn: async (values: ProfileFormValues) => {
       const res = await apiRequest("PATCH", "/api/settings/profile", values);
       return res.json();
     },
-    onSuccess: () => {
+    onSuccess: (updatedUser) => {
+      queryClient.setQueryData(["/api/auth/user"], updatedUser);
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
       toast({
         title: "Thành công",
         description: "Thông tin cá nhân đã được cập nhật.",
       });
-      form.reset(form.getValues());
+      form.reset({
+        firstName: updatedUser.firstName || "",
+        lastName: updatedUser.lastName || "",
+        username: updatedUser.username || "",
+        bio: updatedUser.bio || "",
+        school: updatedUser.school || "",
+        province: updatedUser.province || "",
+        birthDate: updatedUser.birthDate || "",
+        gender: updatedUser.gender || "other",
+        profileImageUrl: updatedUser.profileImageUrl || "",
+      });
+      setPreviewImage(updatedUser.profileImageUrl || null);
     },
     onError: (error: Error) => {
       toast({
@@ -101,10 +129,21 @@ export default function ProfileSettings() {
       }
 
       const reader = new FileReader();
-      reader.onloadend = () => {
+      reader.onloadend = async () => {
         const base64String = reader.result as string;
         setPreviewImage(base64String);
-        form.setValue("profileImageUrl", base64String, { shouldDirty: true });
+        try {
+          const uploadRes = await apiRequest("POST", "/api/upload", { dataUrl: base64String });
+          const upload = await uploadRes.json();
+          form.setValue("profileImageUrl", upload.url, { shouldDirty: true });
+          setPreviewImage(upload.url);
+        } catch (_error) {
+          toast({
+            title: "Lỗi",
+            description: "Không thể tải ảnh lên. Vui lòng thử lại.",
+            variant: "destructive",
+          });
+        }
       };
       reader.readAsDataURL(file);
     }
@@ -218,7 +257,7 @@ export default function ProfileSettings() {
                 <Input value={user?.email || ""} disabled className="bg-muted" data-testid="input-email-readonly" />
               </FormControl>
               <FormDescription>
-                Email được quản lý bởi Replit Auth và không thể thay đổi.
+                Email hiện tại của tài khoản.
               </FormDescription>
             </FormItem>
 

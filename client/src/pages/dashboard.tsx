@@ -151,6 +151,20 @@ export default function Dashboard() {
                 )}
               </CardContent>
             </Card>
+
+            <Card className="shadow-lg shadow-black/5 rounded-3xl border-border/50">
+              <CardHeader>
+                <CardTitle className="font-display text-lg">Gamification</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <Link href="/challenges" className="block rounded-xl border border-border/60 p-3 text-sm hover:border-primary/40 hover:bg-primary/5">
+                  Daily/Weekly Challenges
+                </Link>
+                <Link href="/leaderboard" className="block rounded-xl border border-border/60 p-3 text-sm hover:border-primary/40 hover:bg-primary/5">
+                  Leaderboard
+                </Link>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>

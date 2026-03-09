@@ -1,6 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { InsertTestResult, TestResult } from "@shared/schema";
 
+type SubmitResultPayload = InsertTestResult & {
+  timeSpentSeconds?: number;
+  startedAt?: string;
+};
+
 export function useResults() {
   return useQuery({
     queryKey: ["/api/results"],
@@ -9,13 +14,15 @@ export function useResults() {
       if (!res.ok) throw new Error("Failed to fetch results");
       return res.json();
     },
+    staleTime: 0,
+    refetchOnMount: "always",
   });
 }
 
 export function useSubmitResult() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (data: InsertTestResult) => {
+    mutationFn: async (data: SubmitResultPayload) => {
       const res = await fetch("/api/results", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

@@ -10,8 +10,8 @@ import { useState, useEffect } from "react";
   import { Sun, Moon, Monitor, Type, Languages, Palette, Check } from "lucide-react";
   import { apiRequest, queryClient } from "@/lib/queryClient";
   import { useToast } from "@/hooks/use-toast";
-  import { DashboardLayout } from "@/components/layout/dashboard-layout";
-  import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils";
+import SettingsLayout from "./layout";
 
   const appearanceSchema = z.object({
     theme: z.enum(["light", "dark", "system"]),
@@ -131,8 +131,8 @@ import { useState, useEffect } from "react";
     }
 
     return (
-      <DashboardLayout>
-        <div className="container max-w-4xl py-6 space-y-8">
+      <SettingsLayout>
+        <div className="space-y-8">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Giao diện</h1>
             <p className="text-muted-foreground">
@@ -370,7 +370,7 @@ import { useState, useEffect } from "react";
             </form>
           </Form>
         </div>
-      </DashboardLayout>
+      </SettingsLayout>
     );
   }
   

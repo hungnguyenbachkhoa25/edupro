@@ -19,6 +19,9 @@ import ThptqgNav from "@/pages/exams/thptqg";
 import IeltsNav from "@/pages/exams/ielts";
 import SatNav from "@/pages/exams/sat";
 import NotificationsPage from "@/pages/notifications";
+import LeaderboardPage from "@/pages/leaderboard";
+import ChallengesPage from "@/pages/challenges";
+import BadgesPage from "@/pages/badges";
 import SettingsIndex from "@/pages/settings/index";
 import ProfileSettings from "@/pages/settings/profile";
 import AppearanceSettings from "@/pages/settings/appearance";
@@ -28,6 +31,11 @@ import AccountSettings from "@/pages/settings/account";
 import ProfilePage from "@/pages/profile/index";
 import NotificationsSettings from "@/pages/settings/notifications";
 import GoalsSettings from "@/pages/settings/goals";
+import AIIndexRedirect from "@/pages/ai/index";
+import AIWritingPage from "@/pages/ai/writing";
+import AIPlannerPage from "@/pages/ai/planner";
+import AIWeaknessPage from "@/pages/ai/weakness";
+import AIAssistantPage from "@/pages/ai/assistant";
 import { useUserPreferences } from "@/hooks/use-user-preferences";
 
 function ProtectedRoute({ component: Component, ...rest }: any) {
@@ -80,6 +88,15 @@ function Router() {
       <Route path="/notifications">
         <ProtectedRoute component={NotificationsPage} />
       </Route>
+      <Route path="/leaderboard">
+        <ProtectedRoute component={LeaderboardPage} />
+      </Route>
+      <Route path="/challenges">
+        <ProtectedRoute component={ChallengesPage} />
+      </Route>
+      <Route path="/badges">
+        <ProtectedRoute component={BadgesPage} />
+      </Route>
       <Route path="/profile/:username">
         {(params: any) => <ProtectedRoute component={ProfilePage} username={params.username} />}
       </Route>
@@ -106,6 +123,24 @@ function Router() {
       </Route>
       <Route path="/settings/account">
         <ProtectedRoute component={AccountSettings} />
+      </Route>
+      <Route path="/ai">
+        <ProtectedRoute component={AIIndexRedirect} />
+      </Route>
+      <Route path="/ai/writing">
+        <ProtectedRoute component={AIWritingPage} />
+      </Route>
+      <Route path="/ai/planner">
+        <ProtectedRoute component={AIPlannerPage} />
+      </Route>
+      <Route path="/ai/weakness">
+        <ProtectedRoute component={AIWeaknessPage} />
+      </Route>
+      <Route path="/ai/assistant">
+        <ProtectedRoute component={AIAssistantPage} />
+      </Route>
+      <Route path="/ai-lab">
+        <ProtectedRoute component={AIWritingPage} />
       </Route>
       <Route component={NotFound} />
     </Switch>
