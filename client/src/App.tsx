@@ -22,6 +22,9 @@ import NotificationsPage from "@/pages/notifications";
 import LeaderboardPage from "@/pages/leaderboard";
 import ChallengesPage from "@/pages/challenges";
 import BadgesPage from "@/pages/badges";
+import CommunityPage from "@/pages/community";
+import LearningCenterPage from "@/pages/learning-center";
+import AnalyticsPage from "@/pages/analytics";
 import SettingsIndex from "@/pages/settings/index";
 import ProfileSettings from "@/pages/settings/profile";
 import AppearanceSettings from "@/pages/settings/appearance";
@@ -96,6 +99,15 @@ function Router() {
       </Route>
       <Route path="/badges">
         <ProtectedRoute component={BadgesPage} />
+      </Route>
+      <Route path="/community">
+        <ProtectedRoute component={CommunityPage} />
+      </Route>
+      <Route path="/learning-center">
+        <ProtectedRoute component={LearningCenterPage} />
+      </Route>
+      <Route path="/analytics">
+        <ProtectedRoute component={AnalyticsPage} />
       </Route>
       <Route path="/profile/:username">
         {(params: any) => <ProtectedRoute component={ProfilePage} username={params.username} />}

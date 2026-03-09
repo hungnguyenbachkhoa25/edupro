@@ -15,6 +15,9 @@ import {
   PenLine,
   ChartColumn,
   MessageSquareText,
+  Users,
+  LibraryBig,
+  ChartNoAxesCombined,
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
@@ -58,6 +61,12 @@ const aiFeatureItems = [
   { title: "Kế hoạch học tập", url: "/ai/planner", icon: CalendarDays },
   { title: "Phân tích điểm yếu", url: "/ai/weakness", icon: ChartColumn },
   { title: "Trợ lý AI", url: "/ai/assistant", icon: MessageSquareText },
+];
+
+const socialContentAnalyticsItems = [
+  { title: "Cộng đồng", url: "/community", icon: Users },
+  { title: "Nội dung học", url: "/learning-center", icon: LibraryBig },
+  { title: "Analytics", url: "/analytics", icon: ChartNoAxesCombined },
 ];
 
 export function AppSidebar() {
@@ -125,6 +134,15 @@ export function AppSidebar() {
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>{renderItems(aiFeatureItems)}</SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+            Social / Content / Analytics
+          </SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>{renderItems(socialContentAnalyticsItems)}</SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>

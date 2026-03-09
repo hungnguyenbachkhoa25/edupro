@@ -20,6 +20,7 @@ import {
   Eraser,
   RotateCcw,
   Timer,
+  CircleHelp,
 } from "lucide-react";
 import confetti from "canvas-confetti";
 
@@ -649,6 +650,22 @@ export default function TestSession({ id }: { id: string }) {
                     <button type="button" className={`h-6 w-6 rounded-full border ${highlightColor === "green" ? "bg-green-500" : "bg-green-200"}`} onClick={() => setQuestionHighlight((p) => ({ ...p, [currentQuestion.id]: "green" }))} />
                     <button type="button" className="rounded-md border px-2 py-1 text-xs" onClick={() => setQuestionHighlight((p) => ({ ...p, [currentQuestion.id]: "none" }))}>Clear</button>
                   </div>
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="gap-1"
+                    onClick={() => {
+                      const q = encodeURIComponent(currentQuestion.text);
+                      setLocation(`/community?tab=forum&question=${q}`);
+                    }}
+                  >
+                    <CircleHelp className="h-4 w-4" />
+                    Giải thích câu này (Forum)
+                  </Button>
                 </div>
 
                 <div className={`rounded-xl p-4 ${highlightColor === "yellow" ? "bg-amber-400/20" : highlightColor === "blue" ? "bg-blue-500/15" : highlightColor === "green" ? "bg-green-500/15" : "bg-transparent"}`}>

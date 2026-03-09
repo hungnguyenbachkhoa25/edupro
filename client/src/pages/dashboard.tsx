@@ -163,6 +163,15 @@ export default function Dashboard() {
                 <Link href="/leaderboard" className="block rounded-xl border border-border/60 p-3 text-sm hover:border-primary/40 hover:bg-primary/5">
                   Leaderboard
                 </Link>
+                <Link href="/community" className="block rounded-xl border border-border/60 p-3 text-sm hover:border-primary/40 hover:bg-primary/5">
+                  Community
+                </Link>
+                <Link href="/learning-center" className="block rounded-xl border border-border/60 p-3 text-sm hover:border-primary/40 hover:bg-primary/5">
+                  Learning Center
+                </Link>
+                <Link href="/analytics" className="block rounded-xl border border-border/60 p-3 text-sm hover:border-primary/40 hover:bg-primary/5">
+                  Analytics Dashboard
+                </Link>
               </CardContent>
             </Card>
           </div>
